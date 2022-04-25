@@ -1,0 +1,541 @@
+﻿@model IEnumerable<QMR.Models.QuarterlyReviewDetails>
+@{
+    ViewData["Title"] = "QuarterlyReview";
+}
+
+<link rel="stylesheet" href="~/css/qmr.css">
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/DataTable/jquery.dataTables.js"></script>
+<script src="~/js/DataTable/dataTables.responsive.js"></script>
+<script type="text/javascript" src="~/js/DataTable/processing().js"></script>
+<style src="https://cdn.datatables.net/rowgroup/1.1.2/css/rowGroup.dataTables.min.css"></style>
+<script src="https://cdn.datatables.net/rowgroup/1.1.2/js/dataTables.rowGroup.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.2.1/js/dataTables.fixedColumns.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+<style src="https://cdnjs.cloudflare.com/ajax/libs/jeditable.js/1.7.3/jeditable.min.js"></style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" media="print" href="~/css/print.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var oTable = $('table').DataTable({
+            paging: false,
+            "responsive": true,
+            "language": {
+                "zeroRecords": "No records available",
+                "infoEmpty": "No records available"
+            },
+
+            "sScrollX": "100%",
+            "bScrollCollapse": true,
+             searching: false,
+            bAutoWidth: false,
+            ordering: true,
+            order: [[0, 'asc'], [1, 'asc']],
+            rowGroup: {
+                dataSrc: [0, 1]
+            },
+            columnDefs: [{
+                "width": "100px",
+                targets: [0, 1],
+                visible: false
+            }],
+        });
+        $('table').on('click', '.btn-primary', function () {
+            var btn = $(this);
+            var $row = $(this).closest("tr");
+            $tds = $row.find("td:nth-child(11)");
+            var NewValue, id, action, selectTrend;
+            $.each($tds, function (i, el) {
+                $(this).find("input").each(function () {
+                    var input = $(this);
+                    NewValue = input.val();
+                });
+            });
+            action = $row.find("select").val();
+
+            $tds = $row.find("td:nth-child(13)");
+            $.each($tds, function (i, el) {
+                selectTrend = $(this).find("select").val();
+            });
+
+            $tdsmeasureid = $row.find("td:nth-child(16)");
+            $.each($tdsmeasureid, function (i, el) {
+                var currentValue = $(this).find("input").val();
+                $(this).html(currentValue);
+                measureid = $(this).text();
+                $(this).css('visibility', 'hidden');
+                id = measureid;
+            });
+            var quarterId = $('#TempData_QuarterId_').val();
+            $.ajax({
+                url: '@Url.Action("Save")',
+                data: { id: id, CurrentValue: NewValue, selectedAction: action, SelectedTrend: selectTrend, quarterId: quarterId },
+
+                cache: false,
+                type: "POST",
+                success: function (data) {
+                    btn.removeClass("btn-primary").addClass("btn-success");
+                    btn.html("Update");
+                  },
+                error: function (reponse) {
+                    var errorMessage = "Please enter only Numeric value in CurrentValue field, do not add Measure unit like % ";
+                    alert("error : " + errorMessage);
+                }
+            });
+        });
+        $('table').on('click', '.btn-success', function () {
+            var btn = $(this);
+            var $row = $(this).closest("tr");
+            $tds = $row.find("td:nth-child(11)");
+            var NewValue, id, action, selectTrend;
+            $.each($tds, function (i, el) {
+                $(this).find("input").each(function () {
+                    var input = $(this);
+                    NewValue = input.val();
+                });
+            });
+            action = $row.find("select").val();
+
+            $tds = $row.find("td:nth-child(13)");
+            $.each($tds, function (i, el) {
+                selectTrend = $(this).find("select").val();
+            });
+
+            $tdsmeasureid = $row.find("td:nth-child(16)");
+            $.each($tdsmeasureid, function (i, el) {
+                var currentValue = $(this).find("input").val();
+                $(this).html(currentValue);
+                measureid = $(this).text();
+                $(this).css('visibility', 'hidden');
+                id = measureid;
+            });
+            var quarterId = $('#TempData_QuarterId_').val();
+            $.ajax({
+                url: '@Url.Action("Save")',
+                data: { id: id, CurrentValue: NewValue, selectedAction: action, SelectedTrend: selectTrend, quarterId: quarterId },
+
+                cache: false,
+                type: "POST",
+                success: function (data) {
+                    btn.html("Updated");
+                },
+                error: function (reponse) {
+                    var errorMessage = "Please enter only Numeric value in CurrentValue field, do not add Measure unit like % ";
+                    alert("error : " + errorMessage);
+                }
+            });
+        });
+        $('table').on('click', '.chartmodal', function (e) {
+            e.preventDefault();
+            $("#ChartModal").on("hidden.bs.modal", function () {
+                $(this).removeData('bs.modal');
+                $("#modal-content").html("");
+            });
+            var quarterId = $('#TempData_QuarterId_').val();
+            var $row = $(this).closest("tr");
+            var quarterStatus = $('#TempData_QuarterStatus_').val();
+            var modalTitle;
+            if (quarterStatus != "True") {
+                modalTitle = $row.find("td:nth-child(2)").text();
+                $tdsmeasureid = $row.find("td:nth-child(16)");
+                $.each($tdsmeasureid, function (i, el) {
+                    var currentValue = $(this).find("input").val();
+                    $(this).html(currentValue);
+                    measureid = $(this).text();
+                    $(this).css('visibility', 'hidden');
+                    id = measureid;
+                });
+            }
+            else {
+                modalTitle = $row.find("td:nth-child(1)").text();
+                $tdsmeasureid = $row.find("td:nth-child(14)");
+                $.each($tdsmeasureid, function (i, el) {
+                    var currentValue = $(this).find("input").val();
+                    $(this).html(currentValue);
+                    measureid = $(this).text();
+                    $(this).css('visibility', 'hidden');
+                    id = measureid;
+                });
+            }
+            
+            $('#ChartModal .modal-title').text(modalTitle);
+            $.ajax({
+                url: '@Url.Action("Chart")',
+                data: { id: quarterId, measureId: id },
+                cache: false,
+                type: "POST",
+                success: function (data) {
+                    $("#modal-content").html("");
+                    $("#myDivID").html("");
+                    drawChart(data);
+                    $("#modal-content").html(data);
+                    $("#ChartModal").modal("show");
+                },
+                error: function (reponse) {
+                    alert("error : " + reponse);
+                }
+            });
+        });
+        function drawChart(chartdata)
+        {
+            var svg = d3.select("svg");
+            svg.selectAll("*").remove();
+
+             var margin = { top: 20, right: 20, bottom: 70, left: 40 },
+                    width = 600 - margin.left - margin.right,
+                    height = 300 - margin.top - margin.bottom;
+
+                var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+
+                var y = d3.scale.linear().range([height, 0]);
+
+            var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom");
+                   
+
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient("left")
+                    .ticks(10);
+
+            var svg = d3.select("#myDivID").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform",
+                        "translate(" + margin.left + "," + margin.top + ")");
+
+            var quarterId, id, Greenheight, Yellowheight, MeasureUnit;
+            quarterId = $('#TempData_QuarterId_').val();
+           
+            d3.json(chartdata, function (data) {
+               
+                chartdata.forEach(function (d) {
+                    Redheight = d.redheight;
+                    Greenheight = d.greenheight;
+                    Yellowheight = d.yellowheight;
+                    MeasureUnit = d.measureUnit;
+                        d.quarterDetail = d.quarterDetail;
+                    d.currentValue = +d.currentValue;
+                    d.measureColor = +d.measureColor;
+                    });
+               
+                x.domain(chartdata.map(function (d) { return d.quarterDetail; }));
+                y.domain([0, d3.max(chartdata, function (d) { return d.currentValue; })]);
+
+                svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + (height) + ")")
+                    .call(xAxis)
+                    .selectAll("text")
+                    .style("text-anchor", "end")
+                    .attr("dx", "-.8em")
+                    .attr("dy", "-.55em")
+                    .attr("transform", "rotate(-45)");
+
+                svg.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis)
+                    .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("x", 0 - (height / 2))
+                    .attr("y", 0 - margin.left / 2)
+                    .attr("dy", "-4")
+                    .style("text-anchor", "end")
+                    .text(MeasureUnit)
+                    .style("font-weight", "bold")
+                    .style("font-size", "14px");
+                
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Redheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#ff3800");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Yellowheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#f8de7e");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Greenheight)
+                        .attr("class", "bar")
+                    .attr("fill", "lightgreen");
+
+                if (Redheight > Greenheight)
+                {
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Redheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#ff3800");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Yellowheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#f8de7e");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Greenheight)
+                        .attr("class", "bar")
+                        .attr("fill", "lightgreen");
+                }
+                else
+                {
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Greenheight)
+                        .attr("class", "bar")
+                        .attr("fill", "lightgreen");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Yellowheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#f8de7e");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Redheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#ff3800");
+                }
+                svg.selectAll("bar")
+                    .data(chartdata)
+                    .enter().append("rect")
+                    .attr("fill", "steelblue")
+                    .attr("class", "bar")
+                    .attr("x", function (d) { return x(d.quarterDetail); })
+                    .attr("width", x.rangeBand())
+                    .attr("y", function (d) { return y(d.currentValue); })
+                    .attr("height", function (d) { return height - y(d.currentValue); });
+
+                svg.selectAll("text.bar")
+                    .data(chartdata)
+                    .enter().append("text")
+                    .attr("text-anchor", "Right")
+                    .attr("class", "bar")
+                    .attr("x", function (d) { return x(d.quarterDetail); })
+                    .attr("width", x.rangeBand())
+                    .attr("y", function (d) { return y(d.currentValue); })
+                    .attr("height", function (d) { return height - y(d.currentValue); })
+                    .text(function (d) { return d.currentValue; });
+            });
+        }
+        });
+</script>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">QuarterlyReview</li>
+        @if (TempData["Quarter"] != null)
+        {
+        <li class="ml-auto"><h4><b>DEQ Quarterly Measure Review</b> @TempData["Quarter"]</h4></li>
+        }
+    </ol>
+    <ol class="breadcrumb">
+        @if (TempData["MeasureCount"] != null)
+        {
+        <li><h6><b>Total Measure on QMR :</b> @TempData["MeasureCount"]</h6></li>
+        <li class="ml-auto"><h6><b>Total measure data was collected on:</b> @TempData["Measurecollected"]</h6></li>
+        }
+
+    </ol>
+</nav>
+<div>
+    <input type="hidden" asp-for=@TempData["QuarterId"] />
+    <input type="hidden" asp-for=@TempData["QuarterStatus"] />
+    <table class="table table-condensed table-bordered table-hover table-responsive nowrap" width="100%">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.MeasureTypeDescription)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.measureGroupName)
+                </th>
+                @if (TempData["QuarterStatus"].ToString() != "True")
+                {
+                    <th>
+                    </th>
+                }
+                <th>
+                    @Html.DisplayNameFor(model => model.Title)
+                </th>
+                <th>
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RollUpMeasure)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Target)
+                </th>
+                <th class="greenheader">
+                    @Html.DisplayNameFor(model => model.GreenRange)
+                </th>
+                <th class="Yellowheader">
+                    @Html.DisplayNameFor(model => model.YellowRange)
+                </th>
+                <th class="Redheader">
+                    @Html.DisplayNameFor(model => model.RedRange)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.SeasonName)
+                </th>
+                <th data-step="1" data-intro="Set the Current Value in relation to the Target Value!">
+                    @Html.DisplayNameFor(model => model.CurrentValue)
+                </th>
+                <th data-step="2" data-intro="Set the current Action associated with the measure’s status!">
+                    @Html.DisplayNameFor(model => model.Action)
+                </th>
+                <th data-step="3" data-intro="Set the current direction this measure is Trending!">
+                    @Html.DisplayNameFor(model => model.Trend)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DataSteward)
+                </th>
+                @if (TempData["QuarterStatus"].ToString() != "True")
+                {
+                    <th>
+                        @Html.DisplayNameFor(model => model.MeasureOwner)
+                    </th>
+                }
+                <th style="display:none">
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MeasureTypeDescription)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.measureGroupName)
+                </td>
+                @if (TempData["QuarterStatus"].ToString() != "True")
+                {
+                    <td>
+                        <button id="save-btn-id" type="button" class="btn-primary"
+                                asp-action="Save" asp-route-id="@item.MeasureId">
+                            Save
+                        </button>
+                    </td>
+                }
+                <td class='text-wrap width-200'>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    <a href="#ChartModal" data-toggle="modal" class="chartmodal" @*data-targeturl="@Url.Action("Chart",new {id=TempData["QuarterId"], measureId = item.MeasureId })"*@>chart</a>
+                    <div class="modal fade" id="ChartModal" tabindex="-1" role="dialog" aria-labelledby="ChartModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="ChartModalLabel"></h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="myDivID"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RollUpMeasure)
+                </td>
+                <td class='text-wrap width-200'>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                @if (item.MeasureUnit != "Number")
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Target)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+                    </td>
+                    <td>
+                        <text>></text>@Html.DisplayFor(modelItem => item.GreenRange)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.RedRange)<text>-</text>@Html.DisplayFor(modelItem => item.GreenRange)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.RedRange)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Target)
+                    </td>
+                    <td>
+                        <text>></text>@Html.DisplayFor(modelItem => item.GreenRange)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.RedRange)<text>-</text>@Html.DisplayFor(modelItem => item.GreenRange)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.RedRange)
+                    </td>
+                }
+                <td>
+                    @Html.DisplayFor(modelItem => item.SeasonName)
+                </td>
+                @if (TempData["QuarterStatus"].ToString() == "False")
+                {
+                    <td>
+                        <input asp-for=@item.CurrentValue style="width:75%" />
+                    </td>
+                    <td class='text-wrap width-400'>
+                        @Html.DropDownListFor(modelItem => item.Action, new SelectList(item.listAction))
+                        @Html.ValidationMessageFor(modelItem => item.Action)
+                    </td>
+                    <td>
+                        @Html.DropDownListFor(modelItem => item.Trend, new SelectList(item.listTrend))
+                        @Html.ValidationMessageFor(modelItem => item.Trend)
+                    </td>
+                }
+                else
+                {
+                    <td class="@Html.DisplayFor(modelItem => item.CurrentValueRange)">
+                        @Html.DisplayFor(modelItem => item.CurrentValue)
+                    </td>
+                    <td class='text-wrap width-400'>
+                        @Html.DisplayFor(modelItem => item.Action)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Trend)
+                    </td>
+                }
+                <td>
+                    @Html.DisplayFor(modelItem => item.DataSteward)
+                </td>
+                @if (TempData["QuarterStatus"].ToString() != "True")
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.MeasureOwner)
+                    </td>
+                }
+                <td class="measureid" style="display:none">
+                    @Html.HiddenFor(modelItem => item.MeasureId)
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,60 @@
+﻿@model QMR.Models.QuarterlyMeasure
+
+@{
+    ViewData["Title"] = "Create";
+}
+<script src="~/js/jscolor.js"></script>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">QuarterlyMeasure</li>
+    </ol>
+</nav>
+@if (TempData["Success"] != null)
+{
+    <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+}
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="panel-group">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">QuarterlyMeasure</h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row text-center">
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <label data-step="1" data-intro="Use this field to define the quarter associated with new quarterly measurement series!" asp-for="Quarter" class="control-label"></label>
+                                <select asp-for="Quarter" class="form-control">
+                                    <option>1st quarter </option>
+                                    <option>2nd quarter</option>
+                                    <option>3rd quarter</option>
+                                    <option>4th quarter</option>
+                                </select>
+                                <span asp-validation-for="Quarter" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-3">
+                                <label data-step="2" data-intro="Use this field to define the year associated with new quarterly measurement series!" asp-for="Year" class="control-label"></label>
+                                <select asp-for="Year" class="form-control">
+                                    <option>@DateTime.Today.Year </option>
+                                    <option>@DateTime.Today.AddYears(1).Year </option>
+                                </select>
+                                <span asp-validation-for="Year" class="text-danger"></span>
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <input type="submit" value="Save" style="margin-top:10px" class="btn btn-default btn-lg btn-success" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

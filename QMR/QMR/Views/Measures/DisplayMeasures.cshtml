@@ -1,0 +1,464 @@
+﻿@model IEnumerable<QMR.Models.MeasureDetails>
+
+@{
+    ViewData["Title"] = "DisplayMeasure";
+}
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.15.1/jquery.validate.min.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/mvc/5.2.3/jquery.validate.unobtrusive.min.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/respond/1.4.2/respond.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.1.0/js/dataTables.responsive.min.js"></script>
+<script type="text/javascript" src="~/lib/jquery/dist/DataTables/processing().js"></script>
+<style src="https://cdn.datatables.net/rowgroup/1.1.2/css/rowGroup.dataTables.min.css"></style>
+<script src="https://cdn.datatables.net/rowgroup/1.1.2/js/dataTables.rowGroup.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<style>
+    #successMeasure {
+        display: none;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .table.dataTable {
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        font-size: 10px;
+    }
+
+    .list-group-item:last-child {
+        margin-bottom: 0;
+        border-bottom-right-radius: 4px;
+        border-bottom-left-radius: 4px;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 14px;
+    }
+
+    .modal-title {
+        font-weight: bold;
+    }
+
+    .bar {
+        font-weight: bold;
+    }
+
+    .y axis {
+        font: 10px sans-serif;
+        font-weight: bold;
+    }
+
+    .axis {
+        font: 10px sans-serif;
+    }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+    tr.dtrg-group.dtrg-start.dtrg-level-0 td {
+        font-weight: bold;
+        background-color: #e0e0e0;
+        font-size: 14px;
+    }
+
+    tr.dtrg-group.dtrg-start.dtrg-level-1 td {
+        font-weight: bold;
+        font-size: 12px;
+    }
+</style>
+<script src="~/js/jscolor.js"></script>
+<script>
+    $(document).ready(function () {
+        var oTable = $('table').DataTable({
+            paging: false,
+            "responsive": 1,
+            "info": false,
+            "language": {
+                "zeroRecords": "No records available",
+                "infoEmpty": "No records available"
+            },
+            searching: false,
+            scrollX: true,
+            lengthChange: true,
+            ordering: true,
+            "lengthMenu": [10, 25, 50, 100],
+            order: [[0, 'asc'], [1, 'asc']],
+            rowGroup: {
+                dataSrc: [0, 1]
+            },
+            columnDefs: [{
+                targets: [0, 1],
+                visible: false
+            }]
+        });
+        var val = $('#typeDescription').val();
+        initTerms(val);
+        $('.statusedit').on('click', function () {
+            $('#successMeasure').hide();
+            var id, measureStatus;
+            measureStatus = $(this).prop('checked');
+            var columns = $(this).closest('tr').find('td:not(:first-child)').find("input");
+            $(columns).each(function (index) {
+                id = $(this).val();
+            });
+            $.ajax({
+                url: '@Url.Action("Save")',
+                data: { id: id, MeasureStatus: measureStatus },
+
+                cache: false,
+                type: "POST",
+                success: function (data) {
+                    $('#successMeasure').show();
+                    },
+                error: function (reponse) {
+                    alert("No Quarter Data available");
+                }
+            });
+        });
+      $('table').on('click', '.chartmodal', function (e) {
+            e.preventDefault();
+            $("#ChartModal").on("hidden.bs.modal", function () {
+                $(this).removeData('bs.modal');
+                $("#modal-content").html("");
+            });
+            var $row = $(this).closest("tr");
+
+            var modalTitle;
+                modalTitle = $row.find("td:nth-child(2)").text();
+                $tdsmeasureid = $row.find("td:nth-child(13)");
+                $.each($tdsmeasureid, function (i, el) {
+                    var currentValue = $(this).find("input").val();
+                    $(this).html(currentValue);
+                    measureid = $(this).text();
+                    $(this).css('visibility', 'hidden');
+                    id = measureid;
+                });
+            $('#ChartModal .modal-title').text(modalTitle);
+            $.ajax({
+                url: '@Url.Action("Chart")',
+                data: { measureId: id },
+                cache: false,
+                type: "POST",
+                success: function (data) {
+                    $("#modal-content").html("");
+                    $("#myDivID").html("");
+                    drawChart(data);
+                    $("#modal-content").html(data);
+                    $("#ChartModal").modal("show");
+                },
+                error: function (reponse) {
+                    alert("error : " + reponse);
+                }
+            });
+        });
+        function drawChart(chartdata)
+        {
+            var svg = d3.select("svg");
+            svg.selectAll("*").remove();
+
+             var margin = { top: 20, right: 20, bottom: 70, left: 40 },
+                    width = 600 - margin.left - margin.right,
+                    height = 300 - margin.top - margin.bottom;
+
+                var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+
+                var y = d3.scale.linear().range([height, 0]);
+
+            var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom");
+
+
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient("left")
+                    .ticks(10);
+
+            var svg = d3.select("#myDivID").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform",
+                        "translate(" + margin.left + "," + margin.top + ")")
+                .data(chartdata);
+
+            var id, Greenheight, Yellowheight, MeasureUnit;
+
+                chartdata.forEach(function (d) {
+                    Redheight = d.redheight;
+                    Greenheight = d.greenheight;
+                    Yellowheight = d.yellowheight;
+                    MeasureUnit = d.measureUnit;
+                        d.quarterDetail = d.quarterDetail;
+                    d.currentValue = +d.currentValue;
+                    });
+
+                x.domain(chartdata.map(function (d) { return d.quarterDetail; }));
+                y.domain([0, d3.max(chartdata, function (d) { return d.currentValue; })]);
+
+                svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + (height) + ")")
+                    .call(xAxis)
+                    .selectAll("text")
+                    .style("text-anchor", "end")
+                    .attr("dx", "-.8em")
+                    .attr("dy", "-.55em")
+                    .attr("transform", "rotate(-45)");
+
+                svg.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis)
+                    .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("x", 0 - (height / 2))
+                    .attr("y", 0 - margin.left / 2)
+                    .attr("dy", "-4")
+                    .style("text-anchor", "end")
+                    .text(MeasureUnit)
+                    .style("font-weight", "bold")
+                    .style("font-size", "14px");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Redheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#ff3800");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Yellowheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#f8de7e");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Greenheight)
+                        .attr("class", "bar")
+                    .attr("fill", "lightgreen");
+
+                if (Redheight > Greenheight)
+                {
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Redheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#ff3800");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Yellowheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#f8de7e");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Greenheight)
+                        .attr("class", "bar")
+                        .attr("fill", "lightgreen");
+                }
+                else
+                {
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Greenheight)
+                        .attr("class", "bar")
+                        .attr("fill", "lightgreen");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Yellowheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#f8de7e");
+
+                    svg.append("rect")
+                        .attr("width", "100%")
+                        .attr("height", Redheight)
+                        .attr("class", "bar")
+                        .attr("fill", "#ff3800");
+                }
+                svg.selectAll("bar")
+                    .data(chartdata)
+                    .enter().append("rect")
+                    .attr("fill", "steelblue")
+                    .attr("class", "bar")
+                    .attr("x", function (d) { return x(d.quarterDetail); })
+                    .attr("width", x.rangeBand())
+                    .attr("y", function (d) { return y(d.currentValue); })
+                    .attr("height", function (d) { return height - y(d.currentValue); });
+
+                svg.selectAll("text.bar")
+                    .data(chartdata)
+                    .enter().append("text")
+                    .attr("text-anchor", "Right")
+                    .attr("class", "bar")
+                    .attr("x", function (d) { return x(d.quarterDetail); })
+                    .attr("width", x.rangeBand())
+                    .attr("y", function (d) { return y(d.currentValue); })
+                    .attr("height", function (d) { return height - y(d.currentValue); })
+                    .text(function (d) { return d.currentValue; });
+        }
+    });
+    initTerms = function (val) {
+        $('#typeDescription').addClass("specialhighlight");
+    }
+</script>
+@*<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>*@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">DisplayMeasures</li>
+    </ol>
+</nav>
+<div id="successMeasure" class="alert alert-success" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    Measure Status saved Successfully!
+</div>
+<table class="table table-condensed table-bordered table-responsive table-hover" width="100%">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.MeasureTypeDescription)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.measureGroupName)
+            </th>
+            <th data-step="1" data-intro="Toggle this checkbox to define which Measures will show on the next quarterly report!">
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th>
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RollUpMeasure)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Target)
+            </th>
+            <th class="greenheader">
+                @Html.DisplayNameFor(model => model.GreenRange)
+            </th>
+            <th class="Yellowheader">
+                @Html.DisplayNameFor(model => model.YellowRange)
+            </th>
+            <th class="Redheader">
+                @Html.DisplayNameFor(model => model.RedRange)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SeasonName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MeasureOwner)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataSteward)
+            </th>
+            <th style="display:none">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.MeasureTypeDescription)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.measureGroupName)
+            </td>
+            <td>
+                <input id="status" class="statusedit" type="checkbox" @(item.Status == true ? "checked='checked'" : string.Empty) />
+            </td>
+            <td class='text-wrap width-200'>
+                <a asp-action="Edit" asp-route-id="@item.MeasureId" asp-route-MeasureTypeGroup="Measure">
+                    @Html.DisplayFor(modelItem => item.Title)
+                </a>
+            </td>
+            <td>
+                <a href="#ChartModal" data-toggle="modal" class="chartmodal" @*data-targeturl="@Url.Action("Chart",new {id=TempData["QuarterId"], measureId = item.MeasureId })"*@>chart</a>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RollUpMeasure)
+            </td>
+            <td class='text-wrap width-400'>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            @if (item.MeasureUnit != "Number")
+            {
+            <td>
+                @Html.DisplayFor(modelItem => item.Target)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+            </td>
+            <td>
+                <text>></text>@Html.DisplayFor(modelItem => item.GreenRange)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RedRange)<text>-</text>@Html.DisplayFor(modelItem => item.GreenRange)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RedRange)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+            </td>
+            }
+            else
+            {
+            <td>
+                @Html.DisplayFor(modelItem => item.Target)
+            </td>
+            <td>
+                <text>></text>@Html.DisplayFor(modelItem => item.GreenRange)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RedRange)<text>-</text>@Html.DisplayFor(modelItem => item.GreenRange)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RedRange)
+            </td>
+            }
+            <td>
+                @Html.DisplayFor(modelItem => item.SeasonName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MeasureOwner)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DataSteward)
+            </td>
+            <td style="display:none">
+                @Html.HiddenFor(modelItem => item.MeasureId)
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+<div class="modal fade" id="ChartModal" tabindex="-1" role="dialog" aria-labelledby="ChartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ChartModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="myDivID"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+

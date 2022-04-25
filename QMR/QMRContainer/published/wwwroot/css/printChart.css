@@ -1,0 +1,20 @@
+﻿.sidebar, #start-intro-btn, .breadcrumb, body > h4 {
+    min-width: 0px;
+    max-width: 0px;
+    display: none;
+}
+
+input[type=button] {
+    min-width: 0px;
+    max-width: 0px;
+    display: none;
+}
+
+.container {
+    width: 100% !important;
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+    margin-right: unset !important;
+    margin-left: unset !important;
+    background: transparent;
+}

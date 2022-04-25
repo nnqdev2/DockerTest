@@ -1,0 +1,297 @@
+﻿@model IEnumerable<QMR.Models.QuarterlyChart>
+@{
+    ViewData["Title"] = "QuarterlyChart";
+}
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/DataTable/jquery.dataTables.js"></script>
+<script src="~/js/DataTable/dataTables.responsive.js"></script>
+<script type="text/javascript" src="~/js/DataTable/processing().js"></script>
+<style src="https://cdn.datatables.net/rowgroup/1.1.2/css/rowGroup.dataTables.min.css"></style>
+<script src="https://cdn.datatables.net/rowgroup/1.1.2/js/dataTables.rowGroup.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.2.1/js/dataTables.fixedColumns.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+<style src="https://cdnjs.cloudflare.com/ajax/libs/jeditable.js/1.7.3/jeditable.min.js"></style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<link rel="stylesheet" media="print" href="~/css/printChart.css">
+<link rel="stylesheet" href="~/css/chart.css">
+<script>
+    $(function () {
+        $('#successMessage').hide();
+    });
+    $(function () {
+        $("#sortable").sortable();
+        $("#sortable").disableSelection();
+    });
+    function SaveDisplayOrder() {
+        $('#successMessage').hide();
+        var displayOrders = new Array();
+        $("#sortable li svg g text").each(function (i) {
+            var displayOrder = $(this).attr('qrdid');
+            if (displayOrder != undefined) {
+                displayOrders.push(displayOrder);
+            }
+        });
+        $.ajax({
+            url: '@Url.Action("SaveDisplayOrder")',
+            data: { displayOrders: displayOrders},
+            cache: false,
+            type: "POST",
+            success: function (data) {
+                $('#successMessage').show();
+            },
+            error: function (reponse) {
+                alert("error: " + reponse);
+            }
+        });
+    }
+</script>
+<div>
+    <input type="button" value="Save" onclick="SaveDisplayOrder()" />
+</div>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">QuarterlyRollUpChart</li>
+    </ol>
+</nav>
+<div id="successMessage" class="alert alert-success" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    Chart Display Order saved successfully!
+</div>
+<div>
+    <h4 class="text-center">DEQ Quarterly Measure Review Charts</h4>
+    <input type="hidden" asp-for=@TempData["QuarterId"] />
+    <ul id="sortable"></ul>
+</div>
+<script>
+ var quarterId = $('#TempData_QuarterId_').val();
+            $.ajax({
+                url: '@Url.Action("AllMeasureChart")',
+                data: { id: quarterId },
+                cache: false,
+                type: "POST",
+                success: function (data) {
+                    drawChart(data);
+                    $("#modal-title").html(data);
+                },
+                error: function (reponse) {
+                    alert("error : " + reponse);
+                }
+            });
+        function drawChart(chartdata) {
+            var svg = d3.select("svg");
+            svg.selectAll("*").remove();
+
+
+                var quarterId, id, Greenheight, Yellowheight, MeasureUnit;
+
+                d3.json(chartdata, function (data) {
+
+                    for (var i = 0; i < chartdata.length; i++) {
+                        measureId = chartdata[i].measureId;
+                        Redheight = chartdata[i].redheight;
+                        Greenheight = chartdata[i].greenheight;
+                        Yellowheight = chartdata[i].yellowheight;
+                        GreenRange = chartdata[i].greenRange;
+                        RedRange = chartdata[i].redRange;
+                        Yheight = chartdata[i].yheight;
+                        MeasureUnit = chartdata[i].measureUnit;
+                        Title = chartdata[i].title;
+                        Description = chartdata[i].description;
+                        MeasureTypeDescription = chartdata[i].measureTypeDescription;
+                        MeasureGroupName = chartdata[i].measureGroupName;
+                        QuarterlyReviewDetailsId = chartdata[i].quarterlyReviewDetailsId;
+                        chartdata[i].chartData.forEach(function (d) {
+                            d.quarterDetail = d.quarterDetail;
+                            d.currentValue = +d.currentValue;
+                        });
+
+                        var margin = { top: 150, right: 20, bottom: 100, left: 100 },
+                            width = 800 - margin.left - margin.right,
+                            height = 560 - margin.top - margin.bottom;
+
+                        var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+
+                        var y = d3.scale.linear().range([height, 0]);
+
+                        var xAxis = d3.svg.axis()
+                            .scale(x)
+                            .orient("bottom");
+
+                        var yAxis = d3.svg.axis()
+                            .scale(y)
+                            .orient("left")
+                            .ticks(10);
+                        var svg = d3.select("#sortable")
+                            .append("li")
+                            .attr("class", "ui-state-default")
+                            .append("svg")
+                            .attr("width", width + margin.left + margin.right)
+                            .attr("height", height + margin.top + margin.bottom)
+                            .append("g")
+                            .attr("transform",
+                                "translate(" + margin.left + "," + margin.top + ")");
+                        
+                        var xheight = d3.min(chartdata[i].chartData, function (d) { return d.currentValue; });
+                        var yheight = d3.max(chartdata[i].chartData, function (d) { return d.currentValue; });
+                        x.domain(chartdata[i].chartData.map(function (d) { return d.quarterDetail; }));
+                        if (Math.abs(GreenRange - RedRange) <= 0.3 && MeasureUnit=="%") {
+                          
+                            y.domain([99, Yheight]);
+                        }
+                        else
+                        y.domain([0, Yheight]);
+                        
+                        svg.append("g")
+                            .attr("class", "x axis")
+                            .attr("transform", "translate(0," + (height) + ")")
+                            .call(xAxis)
+                            .selectAll("text")
+                            .style("text-anchor", "end")
+                            .attr("dx", "-.8em")
+                            .attr("dy", "-.55em")
+                            .attr("transform", "rotate(-45)");
+
+                        svg.append("g")
+                            .attr("class", "y axis")
+                            .call(yAxis)
+                            .append("text")
+                            .attr("transform", "rotate(-90)")
+                            .attr("x", 0 - (height / 2))
+                            .attr("y", 0 - margin.left / 2)
+                            .attr("dy", "-4")
+                            .style("text-anchor", "end")
+                            .text(MeasureUnit)
+                            .style("font-weight", "bold")
+                            .style("font-size", "18px");
+
+                        if ((GreenRange - RedRange)>0) {
+                            svg.append("rect")
+                                .attr("width", "100%")
+                                .attr("height", Redheight)
+                                .attr("class", "bar")
+                                .attr("fill", "#ff3800");
+
+                            svg.append("rect")
+                                .attr("width", "100%")
+                                .attr("height", Yellowheight)
+                                .attr("class", "bar")
+                                .attr("fill", "#f8de7e");
+
+                            svg.append("rect")
+                                .attr("width", "100%")
+                                .attr("height", Greenheight)
+                                .attr("class", "bar")
+                                .attr("fill", "lightgreen");
+                        }
+                        else
+                        {
+                            svg.append("rect")
+                                .attr("width", "100%")
+                                .attr("height", Greenheight)
+                                .attr("class", "bar")
+                                .attr("fill", "lightgreen");
+
+                            svg.append("rect")
+                                .attr("width", "100%")
+                                .attr("height", Yellowheight)
+                                .attr("class", "bar")
+                                .attr("fill", "#f8de7e");
+
+                            svg.append("rect")
+                                .attr("width", "100%")
+                                .attr("height", Redheight)
+                                .attr("class", "bar")
+                                .attr("fill", "#ff3800");
+                        }
+                        svg.selectAll("bar")
+                            .data(chartdata[i].chartData)
+                            .enter().append("rect")
+                            .attr("fill", "steelblue")
+                            .attr("class", "bar")
+                            .attr("x", function (d) { return x(d.quarterDetail) ; })
+                            .attr("width", x.rangeBand())
+                            .attr("y", function (d) { return y(d.currentValue); })
+                            .attr("height", function (d) { return height - y(d.currentValue); });
+
+                        svg.selectAll("text.bar")
+                            .data(chartdata[i].chartData)
+                            .enter().append("text")
+                            //.enter().append("rect")
+                            .attr("text-anchor", "Right")
+                            .attr("class", "bar")
+                            .attr("x", function (d) { return x(d.quarterDetail)+25; } )
+                            .attr("width", x.rangeBand())
+                            .attr("y", function (d) { return y(d.currentValue); })
+                            .attr("height", function (d) { return height - y(d.currentValue); })
+                            .text(function (d) { return d.currentValue; });
+
+                        svg.append("text")     
+                            .attr("x", 350)
+                            .attr("y", -70)
+                            .style("text-anchor", "middle")
+                            .text(Title)
+                            .style("font-weight", "bold")
+                            .style("font-size", "16px");
+
+                        svg.append("text")     
+                            .attr("x", 20)
+                            .attr("y", -130)
+                            .style("text-anchor", "middle")
+                            .text(MeasureTypeDescription)
+                            .style("font-weight", "bold")
+                            .style("text-decoration", "underline")
+                            .style("font-size", "18px");
+
+                        svg.append("text")      
+                            .attr("x", 20)
+                            .attr("y", -110)
+                            .text(MeasureGroupName)
+                            .style("font-weight", "bold")
+                            .style("font-size", "18px")
+                            .style("color", "blue");
+
+                        svg.append("text")      
+                            .attr("qrdid", QuarterlyReviewDetailsId)
+                            .attr("x", 20)
+                            .attr("y", -40)
+                            .attr("dy", 0)
+                            .text(Description)
+                            .style("font-size", "14px")
+                            .call(wrap, width);
+                    }
+                });
+            function wrap(text, width) {
+                text.each(function () {
+                    var text = d3.select(this),
+                        words = text.text().split(/\s+/).reverse(),
+                        word,
+                        line = [],
+                        lineNumber = 0,
+                        lineHeight = 1.1,
+                        x = text.attr("x"),
+                        y = text.attr("y"),
+                        dy = parseFloat(text.attr("dy")),
+                        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+                    while (word = words.pop()) {
+                        line.push(word);
+                        tspan.text(line.join(" "));
+                        if (tspan.node().getComputedTextLength() > width) {
+                            line.pop();
+                            tspan.text(line.join(" "));
+                            line = [word];
+                            tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                        }
+                    }
+                });
+                    }
+            }
+</script>

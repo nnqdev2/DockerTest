@@ -1,0 +1,266 @@
+﻿@model QMR.Models.Measure
+
+@{
+    ViewData["Title"] = "Create";
+}
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/jquery.validate.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<style>
+   
+    .ui-menu .ui-menu-item-wrapper {
+        color: #303030;
+        background-color: #fff;
+    }
+    .ui-menu {
+        width: 200px;
+        border: 1px solid;
+    }
+        .ui-menu .ui-menu-item-wrapper:hover {
+            color: #303030;           
+            border: #fff 1px solid;
+        }  
+
+        .ui-menu .ui-menu-item-wrapper:hover,
+        .ui-menu .ui-menu-item-wrapper.ui-state-active {
+            width:210px;
+            color: #303030;
+            background-color: gray;
+            border: #fff 1px solid red;
+        }
+</style>
+@section scripts{
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript" src="~/MeasureGroupType.js"></script>
+    <partial name="_ValidationScriptsPartial"/>
+    <script>
+        function cleartitle()
+        {
+            $('#txtTitle').value="";
+        }
+        $(function () {
+        $('#MeasureOwner').autocomplete(
+        {
+                source: '@Url.Action("AutoCompleteMeasureOwner")',
+               
+        })
+        $('#DataSteward').autocomplete(
+        {
+                source: '@Url.Action("AutoCompleteMeasureOwner")',
+                
+        })
+        })
+    </script>
+}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Measures</li>
+    </ol>
+</nav>
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Create" id="CreateMeasureForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="MeasureId" />
+            <div class="panel-group">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Measures</h4>
+                    </div>
+                    @if (TempData["Success"] != null)
+                    {
+                        <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+                    }
+                    <div class="panel-body">
+                        <div class="row text-center">
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <div data-step="1" data-intro="MeasureGroupType defines the hierarchal categorization of measures. All Measures are associated with a Group. All Groups are associated with Type’s. Each Measure requires additional data points!" class="control-label">
+                                    @Html.LabelFor(model => model.MeasureGroupType.measureGroupType, new { @class = "control-label" })
+                                    <span class="validation-summary-errors"></span>
+                                </div>
+                                @{
+                                    var partList = new List<SelectListItem>()
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                {
+                                new SelectListItem {Text = "Type", Value = "Type"},
+                                new SelectListItem {Text = "Group", Value = "Group"},
+                                new SelectListItem {Text = "Measure", Value = "Measure"},
+                                new SelectListItem {Text = "RollUp", Value = "RollUp"},
+                                     };
+                                }
+                                @Html.DropDownListFor(model => model.MeasureGroupType.measureGroupType, partList, new { @onchange = "measureGroupType_OnChange()" })
+                                @Html.ValidationMessageFor(model => model.MeasureGroupType.measureGroupType)
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <label asp-for="Title" class="control-label" id="lblTitle"></label>
+                                <input asp-for="Title" class="form-control" id="txtTitle" onload="cleartitle()" data-val-required="The Text field is required." />
+                                <div id="titlevalidation">
+                                    <span asp-validation-for="Title" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3" style="margin-top:10px">
+                                <input type="submit" value="Save" class="btn btn-default btn-lg btn-success" onclick="validation_check()" />
+                                <div id="divLoading"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row text-center">
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                @Html.LabelFor(x => x.MeasureGroupType.SelectedType, new { @style = "display:none" })<br />
+                                @Html.DropDownListFor(x => x.MeasureGroupType.SelectedType, new SelectList(Model.MeasureGroupType.MeasureType), new { @style = "display:none" })
+                                @Html.ValidationMessageFor(x => x.MeasureGroupType.SelectedType)
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <div class="control-label">
+                                    @Html.LabelFor(model => model.Status, new { @style = "display:none" })
+                                    <span class="validation-summary-errors"></span>
+                                </div>
+                                @{var statusList = new List<SelectListItem>()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     {
+                                new SelectListItem {Text = "Active", Value = "true",Selected=true},
+                                new SelectListItem {Text = "InActive", Value = "false"},
+                            };
+                                }
+                                @Html.DropDownListFor(model => model.Status, statusList, new { @style = "display:none" })
+                                @Html.ValidationMessageFor(model => model.Status)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row text-center">
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                @Html.LabelFor(x => x.MeasureGroupType.SelectedGroup, new { @style = "display:none" })<br />
+                                @Html.DropDownListFor(x => x.MeasureGroupType.SelectedGroup, new SelectList(Model.MeasureGroupType.MeasureGroup), new { @style = "display:none", @onchange = "measureGroup_OnChange()" })
+                                @Html.ValidationMessageFor(x => x.MeasureGroupType.SelectedGroup)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-body" id="panelDescription" style="display: none">
+                        <div class="row text-center">
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <label asp-for="Description" class="control-label"></label>
+                                <textarea asp-for="Description" name="Description" id="Description" class="form-control"
+                                          rows="5" cols="40"
+                                          data-val-required="The Description field is required."
+                                          data-val-maxlength-max="1000"
+                                          data-val-maxlength="The field Description must be a string or array type with a maximum length of '1000'."
+                                          data-val="true"></textarea>
+                                <div id="Descriptionvalidation">
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                @Html.LabelFor(x => x.MeasureUnit)<br />
+                                @Html.DropDownListFor(x => x.MeasureUnit, new SelectList(Model.MeasureUnitList))
+                                @Html.ValidationMessageFor(x => x.MeasureUnit)
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <label asp-for="Target" class="control-label"></label>
+                                <input asp-for="Target" class="form-control" id="txtTarget" data-val-required="The Target field is required." />
+                                <div id="Targetvalidation">
+                                    <span asp-validation-for="Target" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <label asp-for="RedRange" class="control-label"></label>
+                                <input asp-for="RedRange" class="form-control" id="txtRedRange" data-val-required="The RedRange field is required." />
+                                <div id="RedRangevalidation">
+                                    <span asp-validation-for="RedRange" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <label asp-for="GreenRange" class="control-label"></label>
+                                <input asp-for="GreenRange" class="form-control" id="txtGreenRange" data-val-required="The GreenRange field is required." />
+                                <div id="GreenRangevalidation">
+                                    <span asp-validation-for="GreenRange" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <label asp-for="MeasureOwner" class="control-label"></label>
+                                <input asp-for="MeasureOwner" class="form-control" id="MeasureOwner" />
+                                <span asp-validation-for="MeasureOwner" class="text-danger"></span>
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <label asp-for="DataSteward" class="control-label"></label>
+                                <input asp-for="DataSteward" class="form-control" id="DataSteward" />
+                                <span asp-validation-for="DataSteward" class="text-danger"></span>
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                @Html.LabelFor(x => x.MeasureGroupType.SelectedSeason)<br />
+                                @Html.DropDownListFor(x => x.MeasureGroupType.SelectedSeason, new SelectList(Model.MeasureGroupType.Season))
+                                @Html.ValidationMessageFor(x => x.MeasureGroupType.SelectedSeason)
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <div class="control-label">
+                                    @Html.LabelFor(model => model.Reporting)
+                                    <span class="validation-summary-errors"></span>
+                                </div>
+                                @{var ReportingList = new List<SelectListItem>()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     {
+                                new SelectListItem {Text = "Yes", Value = "true",Selected=true},
+                                new SelectListItem {Text = "No", Value = "false"},
+                            };
+                                }
+                                @Html.DropDownListFor(model => model.Reporting, ReportingList)
+                                @Html.ValidationMessageFor(model => model.Reporting)
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                @Html.LabelFor(x => x.SelectedCurrentValueOption)<br />
+                                @Html.DropDownListFor(x => x.SelectedCurrentValueOption, new SelectList(Model.CurrentValueOptions))
+                                @Html.ValidationMessageFor(x => x.SelectedCurrentValueOption)
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                <div class="control-label">
+                                    @Html.LabelFor(model => model.RollUpMeasure)
+                                    <span class="validation-summary-errors"></span>
+                                </div>
+                                @{var RollUpMeasureListx = new List<SelectListItem>()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     {
+                                    new SelectListItem {Text = "Yes", Value = "true",Selected=true},
+                                    new SelectListItem {Text = "No", Value = "false"},
+                                };
+                                }
+                                @Html.DropDownListFor(model => model.RollUpMeasure, RollUpMeasureListx)
+                                @Html.ValidationMessageFor(model => model.RollUpMeasure)
+                            </div>
+                        </div>
+
+                        <div class="row text-center">
+                            <div class="col-xs-12 col-sm-12 col-md-12">
+                                <label asp-for="Comment" class="control-label"></label>
+                                <textarea asp-for="Comment" name="Comment" id="Comment" class="form-control"
+                                            rows="3" cols="40"
+                                            data-val-maxlength-max="4000"
+                                            data-val-maxlength="The field Description contains a string or array type with a maximum length of '4000'."
+                                            data-val="true">
+                                </textarea>                                         
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="panel-body" id="panelRollUp" style="display: none">
+                        <div class="row text-center">
+                            <div class="col-xs-12 col-sm-6 col-md-3">
+                                @Html.LabelFor(x => x.MeasuresForSelectedGroup)<br />
+                                @Html.DropDownListFor(x => x.MeasuresForSelectedGroup, Enumerable.Empty<SelectListItem>(), new { @disabled = "disabled", style = "width: 100%;", multiple = "multiple" })
+                                @Html.ValidationMessageFor(x => x.MeasuresForSelectedGroup)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-sm-6 col-md-3" style="display: none">
+                        <label asp-for="RollUpMeasure" class="control-label"></label>
+                        <input asp-for="RollUpMeasure" class="form-control" />
+                        <span asp-validation-for="RollUpMeasure" class="text-danger"></span>
+                    </div>
+                </div>
+                </div>
+</form>
+    </div>
+</div>
+

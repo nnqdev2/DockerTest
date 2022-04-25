@@ -1,0 +1,208 @@
+﻿@model IEnumerable<QMR.Models.MeasureHistory>
+
+@{
+    ViewData["Title"] = "Measure History";
+}
+
+<link rel="stylesheet" href="~/css/qmr.css">
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/DataTable/jquery.dataTables.js"></script>
+<script src="~/js/DataTable/dataTables.responsive.js"></script>
+<script type="text/javascript" src="~/js/DataTable/processing().js"></script>
+<style src="https://cdn.datatables.net/rowgroup/1.1.2/css/rowGroup.dataTables.min.css"></style>
+<script src="https://cdn.datatables.net/rowgroup/1.1.2/js/dataTables.rowGroup.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.2.1/js/dataTables.fixedColumns.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+<style src="https://cdnjs.cloudflare.com/ajax/libs/jeditable.js/1.7.3/jeditable.min.js"></style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var oTable = $('table').DataTable({
+            paging: false,
+            "responsive": true,
+            "language": {
+                "zeroRecords": "No records available",
+                "infoEmpty": "No records available"
+            },
+
+            "sScrollX": "100%",
+            "bScrollCollapse": true,
+            searching: false,
+            bAutoWidth: false,
+            ordering: true,
+            order: [[18, 'desc'], [19, 'desc']],
+            //rowGroup: {
+            //    dataSrc: [0, 1]
+            //},
+            columnDefs: [{
+                "width": "100px",
+            /*    targets: [0, 1],*/
+                visible: false
+            }],
+        });
+    });
+</script>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Measure History</li>
+    </ol>
+</nav>
+<div class="panel-heading">
+    <h4 class="panel-title">Measure History</h4>
+</div>
+<div>
+    <table class="table table-condensed table-bordered table-hover table-responsive nowrap" width="100%">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.MeasureTypeDescription)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.measureGroupName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Status)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Title)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RollUpMeasure)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.MeasureUnit)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Target)
+                </th>
+                <th class="greenheader">
+                    @Html.DisplayNameFor(model => model.GreenRange)
+                </th>
+                <th class="Yellowheader">
+                    @Html.DisplayNameFor(model => model.YellowRange)
+                </th>
+                <th class="Redheader">
+                    @Html.DisplayNameFor(model => model.RedRange)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.SeasonName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.MeasureOwner)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DataSteward)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Reporting)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CurrentValueOptionDescription)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.LastUpdatedBy)
+                </th>
+                <th class='text-wrap width-800'>
+                    @Html.DisplayNameFor(model => model.Comment)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.SysStartTime)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.SysEndTime)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.MeasureTypeDescription)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.measureGroupName)
+                    </td>
+                    <td>
+                        <input id="status" type="checkbox" disabled readonly @(item.Status == true ? "checked='checked'" : string.Empty) />
+                    </td>
+                    <td class='text-wrap width-200'>
+                        @Html.DisplayFor(modelItem => item.Title)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.RollUpMeasureString)
+                    </td>
+                    <td class='text-wrap width-400'>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.MeasureUnit)
+                    </td>
+                    @if (item.MeasureUnit != "Number")
+                    {
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Target)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+                        </td>
+                        <td>
+                            <text>></text>@Html.DisplayFor(modelItem => item.GreenRange)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.RedRange)<text>-</text>@Html.DisplayFor(modelItem => item.GreenRange)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.RedRange)<text>@Html.DisplayFor(modelItem => item.MeasureUnit)</text>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Target)
+                        </td>
+                        <td>
+                            <text>></text>@Html.DisplayFor(modelItem => item.GreenRange)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.RedRange)<text>-</text>@Html.DisplayFor(modelItem => item.GreenRange)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.RedRange)
+                        </td>
+                    }
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SeasonName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.MeasureOwner)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DataSteward)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ReportingString)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.CurrentValueOptionDescription)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.LastUpdatedBy)
+                    </td>
+                    <td class='text-wrap width-800'>
+                        @Html.DisplayFor(modelItem => item.Comment)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SysStartTime)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SysEndTime)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

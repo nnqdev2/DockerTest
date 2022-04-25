@@ -1,0 +1,20 @@
+﻿@model QMR.Models.Measure
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"></script>
+
+<noscript>
+    <style>
+        .collapse {
+            display: block;
+        }
+    </style>
+</noscript>
+<div class="container">
+    @await Component.InvokeAsync("Details")
+</div>
+
+

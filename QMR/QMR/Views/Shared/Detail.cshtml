@@ -1,0 +1,208 @@
+﻿@model IEnumerable<QMR.Models.QuarterlyMeasure>
+@{
+    ViewData["Title"] = "Home";
+}
+<style>
+    #successMessage {
+        display: none;
+    }
+    .td-text {
+        font-weight: bold;
+    }
+</style>
+@section Scripts {
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.15.1/jquery.validate.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/mvc/5.2.3/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/respond/1.4.2/respond.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.1.0/js/dataTables.responsive.min.js"></script>
+    <link href="https://cdn.datatables.net/1.10.15/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/lib/jquery/dist/DataTables/processing().js"></script>
+    <script src="~/js/jscolor.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#successMessage').hide();
+            var oTable = $('table').DataTable({
+                "info": false,
+                paging: false,
+                searching: false,
+                bAutoWidth: false,
+                ordering: false
+            });
+            $('table').on('click', '.edit', function () {
+                var id, NewValue;
+                var $row = $(this).closest("tr");
+                $tds = $row.find("td:nth-child(1)");
+                $.each($tds, function (i, el) {
+                    var currentValue = $(this).find("input").val();
+                    $(this).html(currentValue);
+                    QuarterId = $(this).text();
+                    $(this).css('visibility', 'hidden');
+                    id = QuarterId;
+                });
+                $tds = $row.find("td:nth-child(2)");
+                $.each($tds, function (i, el) {
+                    NewValue = $(this).find("input").prop('checked');
+                    if ($(this).find("input").prop('checked')) {
+                        $row.find("button").removeClass("btn-primary").addClass("btn-secondary");
+                        $row.find("button").html("Completed");
+                    }
+                    else {
+                        $row.find("button").removeClass("btn-secondary").addClass("btn-primary");
+                        $row.find("button").html("Start");
+                    }
+                });
+
+                $.ajax({
+                    url: '@Url.Action("quarterSave")',
+                    data: { id: id, quarterStatus: NewValue},
+
+                    cache: false,
+                    type: "POST",
+                    success: function (data) {
+                        $('#successMessage').show();
+
+                    },
+                    error: function (reponse) {
+                        alert("error : " + reponse);
+                    }
+                });
+            });
+            $('table').on('click', '.btn-primary', function () {
+                var id, NewValue;
+                var $row = $(this).closest("tr");
+                $tds = $row.find("td:nth-child(1)");
+                $.each($tds, function (i, el) {
+                    var currentValue = $(this).find("input").val();
+                    $(this).html(currentValue);
+                    QuarterId = $(this).text();
+                    $(this).css('visibility', 'hidden');
+                    id = QuarterId;
+                });
+                $.ajax({
+                    url: '@Url.Action("Rollup")',
+                    data: { id: id},
+
+                    cache: false,
+                    type: "POST",
+                    success: function (response) {
+                        if (response.result == 'Redirect')
+                            window.location = response.url;
+                    },
+                    error: function (reponse) {
+                        alert("error : " + reponse);
+                    }
+                });
+            });
+        })
+    </script>
+}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">QuarterlyMeasure</li>
+    </ol>
+</nav>
+<div id="successMessage" class="alert alert-success" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    Quarter Status saved Successfully!
+</div>
+        <table class="table table-hover" width="100%">
+            <thead>
+                <tr>
+                    <th style="display:none">
+                    </th>
+                    <th data-step="1" data-intro="Toggle this checkbox to lock a Quarterly Series from data input by stewards!">
+                        @Html.DisplayNameFor(model => model.Locked)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.RollUp)
+                    </th>
+                    <th data-step="2" data-intro="Click a Quarter to show Score Card 1!">
+                        @Html.DisplayNameFor(model => model.Quarter)
+                    </th>
+                    <th data-step="3" data-intro="The count of how many Measures are associated with this series!">
+                        @Html.DisplayNameFor(model => model.MeasureCounted)
+                    </th>
+                    <th data-step="4" data-intro="The count of how many measures have data collected for this series!">
+                        @Html.DisplayNameFor(model => model.MeasureCollected)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                <tr>
+                    <td style="display:none">
+                        @Html.HiddenFor(modelItem => item.QuarterId)
+                    </td>
+                    <td>
+                        <input id="status" class="edit" type="checkbox" @(item.Locked == true ? "checked='checked'" : string.Empty) />
+                    </td>
+                    <td>
+                        @if (item.Locked == false)
+                        {
+                            if (item.MeasureCounted <= item.MeasureCollected)
+                            {
+                                <button id="save-btn-id" type="button" class="btn-primary"
+                                        asp-action="Rollup" asp-route-id="@item.QuarterId">
+                                    Start
+                                </button>
+                            }
+                            else
+                            {
+                                <button id="save-btn-id" type="button" class="btn-secondary">
+                                    Start
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <button id="save-btn-id" type="button" class="btn-secondary">
+                                Completed
+                            </button>
+                        }
+                    </td>
+                    @if (item.IsCurrentReportingQuarter == true)
+                    {
+                        <td class="td-text">
+                            <a asp-controller="QuarterlyMeasures" asp-action="QuarterlyReview" asp-route-id="@item.QuarterId">
+                                @Html.DisplayFor(modelItem => item.Quarter)<text>-</text>@Html.DisplayFor(modelItem => item.Year)
+                            </a>
+                            <a asp-controller="QuarterlyMeasures" asp-action="QuarterlyReviewRollup" asp-route-id="@item.QuarterId">
+                                <text>/</text> ScoreCard2
+                            </a>
+                            <a asp-controller="QuarterlyMeasures" asp-action="QuarterlyChart" asp-route-id="@item.QuarterId">
+                                <text>/</text> Chart
+                            </a>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            <a asp-controller="QuarterlyMeasures" asp-action="QuarterlyReview" asp-route-id="@item.QuarterId">
+                                @Html.DisplayFor(modelItem => item.Quarter)<text>-</text>@Html.DisplayFor(modelItem => item.Year)
+                            </a>
+                            <a asp-controller="QuarterlyMeasures" asp-action="QuarterlyReviewRollup" asp-route-id="@item.QuarterId">
+                                <text>/</text> ScoreCard2
+                            </a>
+                            <a asp-controller="QuarterlyMeasures" asp-action="QuarterlyChart" asp-route-id="@item.QuarterId">
+                                <text>/</text> Chart
+                            </a>
+                        </td>
+                    }
+
+                    <td>
+                        @Html.DisplayFor(modelItem => item.MeasureCounted)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.MeasureCollected)
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>

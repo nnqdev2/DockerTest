@@ -1,0 +1,126 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor httpContextAccessor
+@{
+    string env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - QMR</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/site.css?version=1" />
+    @RenderSection("styles", required: false)
+    <noscript>
+        <style>
+            .collapse {
+                display: block;
+            }
+        </style>
+    </noscript>
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-static-top">
+        <div class="container">
+            <div class="navbar-inner">
+                <div class="navbar-header">
+
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#collapse-1" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <div class="navbar-brand">
+                        <a href="https://www.oregon.gov/">
+                            <img class="hidden-xs" src="~/Images/orgov_logo_color.png" />
+                            <img class="visible-xs-inline" src="~/Images/orgov_logo_color_sm.png" />
+                        </a>
+                        <a href="https://www.oregon.gov/deq/Pages/index.aspx" class="navbar-title">
+                            <span class="hidden-xs hidden-sm">Department of Environmental Quality</span>
+                            <span class="hidden-md hidden-lg">DEQ</span>
+                        </a>
+                        @if (env != "Production")
+                        {
+                        <span>&nbsp;<span class="label label-danger">@env</span></span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </nav>
+    <h4 class="text-center">
+        Outcome Based Management
+    </h4>
+    <h4 class="text-center">Quarterly Measures Reporting System</h4>
+       <div class="container">
+        <input class='btn btn-primary' type='button' id='start-intro-btn' onclick="javascript:introJs().start();" value='Help' style="float: right" />
+    </div>
+    <div class="wrapper">
+        @if(httpContextAccessor.HttpContext.Session.GetString("IsAdmin")=="True")
+        {
+        <nav class="sidebar">
+            <div>
+                <a class="list-group-item" href="@Url.Action("Index", "Actions")">Actions</a>
+            </div>
+            <div>
+                <a class="list-group-item" href="@Url.Action("Create", "Measures")">Measures</a>
+            </div>
+            <div>
+                <a class="list-group-item" href="@Url.Action("DisplayMeasures", "Measures")">All Measures</a>
+            </div>
+            <div>
+                <a class="list-group-item" href="@Url.Action("Create", "QuarterlyMeasures")">Create Series</a>
+            </div>
+            <div>
+                <a class="list-group-item" href="@Url.Action("Detail", "QuarterlyMeasures")">Measure Series</a>
+            </div>
+            <div>
+                <a class="list-group-item" href="@Url.Action("QuarterlyRollupSeries", "QuarterlyMeasures")">Quarterly Review Rollup</a>
+            </div>
+        </nav>
+        }
+        else if(httpContextAccessor.HttpContext.Session.GetString("IsDataSteward") == "True")
+        {
+        <nav class="sidebar">
+            <div>
+                <a class="list-group-item" href="@Url.Action("DetailDataSteward", "QuarterlyMeasures")">Measure Series</a>
+            </div>
+            <div>
+                <a class="list-group-item" href="@Url.Action("QuarterlyRollupSeries", "QuarterlyMeasures")">Quarterly Review Rollup</a>
+            </div>
+        </nav>
+        }
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+
+            <div class="container">
+                <hr style="margin-left:15px;margin-right:20px;margin-top:20px;margin-bottom:0px;" />
+                <footer>
+                    <div id="col-xs-12">
+                        <b><a href="http://www.oregon.gov/DEQ/" target="_blank">Department of Environmental Quality</a></b><br>
+                        700 NE Multnomah Street, Suite 600
+                        Portland, OR 97232<br>
+                        Hours:  Mon-Fri, 8 a.m.-5 p.m<br>
+                        Email: <a href="mailto:DEQInfo@deq.state.or.us">DEQInfo@deq.state.or.us</a> | Phone: 503-229-5696 | Fax: 503-229-6124<br />
+                        <a href="http://www.oregon.gov/DAS/ETS/EGOV/pages/termsconditions.aspx" target="_blank">Privacy Policy</a>&nbsp;|&nbsp;
+                        <a href="http://www.oregon.gov/pages/accessibility.aspx" target="_blank">Accessibility</a>
+                    </div>
+
+
+
+                </footer>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.9.3/intro.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.9.3/introjs.css" rel="stylesheet">
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

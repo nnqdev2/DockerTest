@@ -1,0 +1,120 @@
+﻿/*#region Footer*/
+footer {
+    margin-top: 10px;
+    text-align: center;
+    min-height: 151px;
+    background: rgba(0, 0, 0, 0) url('../Images/sealANDlogo.png') no-repeat top center;
+    *zoom: 1;
+}
+/*#endregion*/
+/*#region Navbar*/
+.navbar-inverse {
+    background-image: linear-gradient(to bottom, #5c685a, #0c180a);
+    background-repeat: repeat-x;
+    box-shadow: 0 2px 3px #323232;
+}
+
+.navbar-title {
+    /*font-family: Arial Narrow, Arial, sans-serif;*/
+    /*bottom: -8px;*/
+    font-weight: 700;
+    font-size: large;
+   
+}
+
+.navbar-brand {
+    padding: 2px;
+}
+
+.navbar a:hover, .navbar a:focus {
+    text-decoration: none;
+    color: white;
+}
+
+.navbar a {
+    color: white;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover, .navbar-inserse .navbar-nav > li > a:focus {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    text-shadow: 0px 0px 3px #347522;
+}
+
+.navbar-inverse .navbar-nav > li > a, .navbar-inverse .navbar-header > a {
+    color: rgba(255, 255, 255, 0.8);
+    color: white;
+    /*font-weight:400;*/
+    padding-left: 13px;
+    padding-right: 13px;
+}
+
+.navbar-inverse .navbar-toggle {
+    background-color: rgba(255, 255, 255, 0.2);
+    margin-right: 5px;
+}
+.breadcrumbs {
+    padding: 10px 0 6px;
+    border-bottom: solid 1px #eee;
+    background: url(../img/breadcrumbs.png) repeat;
+}
+
+    .breadcrumbs h1 {
+        color: #666;
+        font-size: 22px;
+        margin-top: 8px;
+    }
+
+.breadcrumb {
+    top: 10px;
+    padding-right: 0;
+    background: none;
+    position: relative;
+}
+
+    .breadcrumb a {
+        color: #777;
+    }
+
+    .breadcrumb li.active,
+    .breadcrumb li a:hover {
+        color: #72c02c;
+        text-decoration: none;
+    }
+.greenheader, .GreenRange {
+    background-color: forestgreen;
+}
+.Yellowheader, .YellowRange {
+    background-color: yellow;
+}
+.Redheader, .RedRange {
+    background-color: red;
+}
+.specialhighlight {
+    font-weight: bold;
+    text-decoration: underline;
+    color: blue;
+}
+tr.odd td:first-child,
+tr.even td:first-child {
+    padding-left: 4em;
+}
+.ui-helper-hidden-accessible {
+    display: none !important;
+}
+.wrapper {
+    display: flex;
+    align-items: stretch;
+}
+
+.sidebar {
+    min-width: 200px;
+    max-width: 220px;
+}
+
+.sidebar.active {
+        margin-left: -250px;
+    }
+
+ 
+/*#endregion*/
